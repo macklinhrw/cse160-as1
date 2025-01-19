@@ -1,17 +1,9 @@
-# Assignment 0
+# Assignment 1
 
 ## Setup
 
-`pnpm create vite as0 -- --template vanilla-ts`
+To install packages (or use npm):
+`pnpm i`
 
-choose vanilla, typescript options
-
-## Tailwindcss setup
-
-`pnpm add -D tailwindcss postcss autoprefixer`
-`pnpm dlx tailwindcss init -p`
-
-add content target specification for tailwind in `tailwind.config.js`
-
-`"./index.html"`
-`"./src/**/*.{js,ts}"`
+To start the development server:
+`pnpm dev`
