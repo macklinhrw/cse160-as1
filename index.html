@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assignment 1</title>
+    <link href="./src/style.css" rel="stylesheet" />
+  </head>
+  <body class="min-h-screen bg-slate-700 text-gray-50">
+    <main class="p-4">
+      <script src="src/asg1.ts" type="module"></script>
+      <script src="src/lib/webgl-utils.js"></script>
+      <script src="src/lib/webgl-debug.js"></script>
+      <script src="src/lib/cuon-matrix-cse160.js" type="module"></script>
+      <script src="src/lib/cuon-utils.js" type="module"></script>
+      <div class="flex">
+        <div class="flex flex-col mx-auto">
+          <div class="flex mx-auto">
+            <canvas
+              class="rounded-sm border bg-black border-gray-400"
+              id="webgl"
+              width="400"
+              height="400"
+            >
+              Please use a browser that supports "canvas"
+            </canvas>
+          </div>
+          <div>
+            <p id="numdot"></p>
+          </div>
+
+          <div class="py-2 space-x-1">
+            <button
+              id="b_green"
+              class="py-1 px-2 bg-gray-400 rounded hover:bg-gray-500"
+            >
+              Green
+            </button>
+            <button
+              id="b_red"
+              class="py-1 px-2 bg-gray-400 rounded hover:bg-gray-500"
+            >
+              Red
+            </button>
+            <button
+              id="b_clear"
+              class="py-1 px-2 bg-gray-400 rounded hover:bg-gray-500"
+            >
+              Clear
+            </button>
+          </div>
+          <div class="py-2 space-x-1">
+            <button
+              id="b_select_point"
+              class="py-1 px-2 bg-gray-400 rounded hover:bg-gray-500"
+            >
+              Point
+            </button>
+            <button
+              id="b_select_triangle"
+              class="py-1 px-2 bg-gray-400 rounded hover:bg-gray-500"
+            >
+              Triangle
+            </button>
+            <button
+              id="b_select_circle"
+              class="py-1 px-2 bg-gray-400 rounded hover:bg-gray-500"
+            >
+              Circle
+            </button>
+          </div>
+          <div class="py-2">
+            <div class="flex">
+              <label for="slider_red" class="w-16">Red</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value="100"
+                id="slider_red"
+              />
+            </div>
+            <div class="flex">
+              <label for="slider_green" class="w-16">Green</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value="100"
+                id="slider_green"
+              />
+            </div>
+            <div class="flex">
+              <label for="slider_blue" class="w-16">Blue</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value="100"
+                id="slider_blue"
+              />
+            </div>
+            <div class="flex flex-col py-2">
+              <div class="flex">
+                <label for="slider_size" class="w-16">Size</label>
+                <input
+                  type="range"
+                  min="5"
+                  max="40"
+                  value="5"
+                  id="slider_size"
+                />
+              </div>
+              <div class="flex">
+                <label for="slider_circle_segments" class="w-16">Segmts</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value="8"
+                  id="slider_circle_segments"
+                />
+                <span class="mx-2">(Circles)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
