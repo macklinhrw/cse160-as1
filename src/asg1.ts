@@ -1,7 +1,7 @@
 import { initShaders } from "./lib/cuon-utils";
-import { Color, DrawableShapes, SaveType, Shape } from "./types";
+import { Color, Coordinate, DrawableShapes, SaveType, Shape } from "./types";
 import { Point } from "./point";
-import { Triangle } from "./triangle";
+import { drawTriangle, Triangle } from "./triangle";
 import { Circle } from "./circle";
 
 // ColoredPoint.js (c) 2012 matsuda
@@ -122,6 +122,16 @@ function addActionsForHtmlUI() {
     // Clear <canvas>
     g_shapesList = [];
     renderAllShapes();
+  };
+
+  let buttonPainting = document.getElementById(
+    "b_painting"
+  ) as HTMLButtonElement;
+  buttonPainting.onclick = () => {
+    // Clear <canvas>
+    g_shapesList = [];
+    renderAllShapes();
+    makePainting();
   };
 
   // Button Events for selecting shape type
@@ -385,6 +395,259 @@ function download(data: BlobPart, filename: string, type: string): void {
       window.URL.revokeObjectURL(url);
     }, 0);
   }
+}
+
+// Painting portion of the code ===
+
+// coordinate: 13 to left, 13 to the right, 14 tall
+const pdx = 2 / 26;
+const pdy = 2 / 14;
+const pcenter: Coordinate = [0, 0];
+
+// Sizes of objects
+// Trees
+const bigTreeWidth = 2 * pdx;
+const bigTreeHeight = 3 * pdy;
+const treeWidth = pdx;
+const treeHeight = 2 * pdy;
+
+function setColor(color: Color) {
+  // Pass the color of a point to u_FragColor variable
+  gl.uniform4f(u_FragColor, color[0], color[1], color[2], color[3]);
+}
+
+// Start in bottom left
+function paintRectangle(
+  pos: Coordinate,
+  color: Color,
+  width: number,
+  height: number
+) {
+  setColor(color);
+  let posTmp = [pos[0], pos[1]];
+  let vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] + width,
+    posTmp[1],
+    posTmp[0],
+    posTmp[1] + height,
+  ]);
+  drawTriangle(vertices);
+  posTmp = [pos[0] + width, pos[1] + height];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] - width,
+    posTmp[1],
+    posTmp[0],
+    posTmp[1] - height,
+  ]);
+  drawTriangle(vertices);
+}
+
+function paintMountain(pos: Coordinate, width: number, height: number) {
+  let color1: Color = [0.9, 0.9, 0.9, 1.0];
+  let color2: Color = [0.3, 0.3, 1.0, 1.0];
+
+  // let width = 13 * pdx;
+  // let height = 4 * pdy;
+
+  setColor(color1);
+  let posTmp = [pos[0], pos[1]];
+  let vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] + width / 2,
+    posTmp[1],
+    posTmp[0] + width / 2,
+    posTmp[1] + height,
+  ]);
+  drawTriangle(vertices);
+  // do shading
+  setColor(color2);
+  posTmp = [pos[0], pos[1]];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] + width / 8,
+    posTmp[1],
+    posTmp[0] + width / 2,
+    posTmp[1] + height,
+  ]);
+  drawTriangle(vertices);
+  // do other part of mountain
+  setColor(color1);
+  posTmp = [pos[0] + width / 2, pos[1]];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0],
+    posTmp[1] + height,
+    posTmp[0] + width / 2,
+    posTmp[1],
+  ]);
+  drawTriangle(vertices);
+}
+
+// function paintHouse(pos: Coordinate) {
+//   let color: Color = [0.0, 1.0, 0.0, 1.0];
+//   let colorDoor: Color = [0.0, 1.0, 0.0, 1.0];
+//   // ...
+// }
+
+function paintTree(pos: Coordinate, type: "big" | "small") {
+  let color: Color = [0.0, 1.0, 0.0, 1.0];
+  let width = type === "big" ? bigTreeWidth : treeWidth;
+  let height = type === "big" ? bigTreeHeight : treeHeight;
+  setColor(color);
+  let vertices = new Float32Array([
+    pos[0],
+    pos[1],
+    pos[0] + width,
+    pos[1],
+    pos[0] + width / 2,
+    pos[1] + height,
+  ]);
+  drawTriangle(vertices);
+}
+
+function paintTripleTree(pos: Coordinate) {
+  paintTree(pos, "small");
+  paintTree([pos[0] + treeWidth, pos[1]], "small");
+  paintTree([pos[0] + 2 * treeWidth, pos[1]], "small");
+}
+
+function paintGround(pos: Coordinate) {
+  let colorSky: Color = [0.0, 0.0, 0.0, 1.0];
+  let colorWater: Color = [0.0, 0.0, 1.0, 1.0];
+
+  setColor(colorWater);
+  // -1, -7
+  let posTmp = [pos[0] - 1 * pdx, pos[1] - 7 * pdy];
+  let vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] - 2 * pdx,
+    posTmp[1] + 3 * pdy,
+    posTmp[0] + 2 * pdx,
+    posTmp[1] + 5 * pdy,
+  ]);
+  drawTriangle(vertices);
+  // 1, -2
+  posTmp = [pos[0] + 1 * pdx, pos[1] - 2 * pdy];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] - 1 * pdx,
+    posTmp[1] + 1 * pdy,
+    posTmp[0] + 8 * pdx,
+    posTmp[1] + 3 * pdy,
+  ]);
+  drawTriangle(vertices);
+  // 9, 1
+  posTmp = [pos[0] + 9 * pdx, pos[1] + 1 * pdy];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] - 1 * pdx,
+    posTmp[1] + 0.4 * pdy,
+    posTmp[0] + 4 * pdx,
+    posTmp[1] + 1 * pdy,
+  ]);
+  drawTriangle(vertices);
+  // Fill in lake
+  // 9, 1
+  posTmp = [pos[0] + 9 * pdx, pos[1] + 1 * pdy];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] + 4 * pdx,
+    posTmp[1] + 0 * pdy,
+    posTmp[0] + 4 * pdx,
+    posTmp[1] + 1 * pdy,
+  ]);
+  drawTriangle(vertices);
+  // 1, -2
+  posTmp = [pos[0] + 1 * pdx, pos[1] - 2 * pdy];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] + 8 * pdx,
+    posTmp[1] + 0 * pdy,
+    posTmp[0] + 8 * pdx,
+    posTmp[1] + 3 * pdy,
+  ]);
+  drawTriangle(vertices);
+  paintRectangle(
+    [posTmp[0] + 8 * pdx, posTmp[1]],
+    colorWater,
+    4 * pdx,
+    3 * pdy
+  );
+  // -1, -7
+  posTmp = [pos[0] - 1 * pdx, pos[1] - 7 * pdy];
+  vertices = new Float32Array([
+    posTmp[0],
+    posTmp[1],
+    posTmp[0] + 2 * pdx,
+    posTmp[1] + 0 * pdy,
+    posTmp[0] + 2 * pdx,
+    posTmp[1] + 5 * pdy,
+  ]);
+  drawTriangle(vertices);
+  paintRectangle(
+    [posTmp[0] + 2 * pdx, posTmp[1]],
+    colorWater,
+    14 * pdx,
+    5 * pdy
+  );
+
+  // Paint sky
+  // y=4-7
+  paintRectangle([-13 * pdx, 5 * pdy], colorSky, 26 * pdx, 2 * pdy);
+}
+
+function makePainting() {
+  // Seem to need to setup webgl here again
+  // Specify the ground color (clear color)
+  gl.clearColor(1.0, 1.0, 1.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  // gl.useProgram(program);
+  gl.enableVertexAttribArray(a_Position);
+
+  paintGround(pcenter);
+  let posTmp = pcenter;
+
+  // Paint mountains
+  posTmp = [pcenter[0] - 4 * pdx, pcenter[1] + 4 * pdy];
+  paintMountain(posTmp as Coordinate, 9 * pdx, 3 * pdy);
+  posTmp = [pcenter[0] - 11 * pdx, pcenter[1] + 3 * pdy];
+  paintMountain(posTmp as Coordinate, 13 * pdx, 4 * pdy);
+
+  // Paint trees
+  posTmp = [pcenter[0] - 0 * pdx, pcenter[1] - 0 * pdy];
+  paintTripleTree(posTmp);
+  posTmp = [pcenter[0] + treeWidth * 3 + 0.5 * pdx, pcenter[1] + 1 * pdy];
+  paintTree(posTmp, "small");
+  posTmp = [pcenter[0] + treeWidth * 4 + 1 * pdx, pcenter[1] + 2 * pdy];
+  paintTripleTree(posTmp);
+
+  posTmp = [pcenter[0] - 9 * pdx, pcenter[1] - 3 * pdy];
+  paintTree(posTmp, "big");
+  posTmp = [pcenter[0] - 9 * pdx + bigTreeWidth, pcenter[1] - 2.5 * pdy];
+  paintTree(posTmp, "big");
+  posTmp = [pcenter[0] - 9 * pdx + bigTreeWidth * 2, pcenter[1] - 2 * pdy];
+  paintTree(posTmp, "big");
+
+  posTmp = [pcenter[0] - 10 * pdx, pcenter[1] - 6.5 * pdy];
+  paintTree(posTmp, "big");
+  posTmp = [pcenter[0] - 10 * pdx + bigTreeWidth, pcenter[1] - 6.5 * pdy];
+  paintTree(posTmp, "big");
+  posTmp = [pcenter[0] - 10 * pdx + bigTreeWidth * 2, pcenter[1] - 6 * pdy];
+  paintTree(posTmp, "big");
+
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
 }
 
 main();

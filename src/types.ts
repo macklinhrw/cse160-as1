@@ -11,6 +11,7 @@ export type Shape = Point | Triangle | Circle;
 // Save system
 export type SaveType = { shapesList: Shape[] };
 
+// Note: This type definition was generated with AI (for download function)
 declare global {
   interface Navigator {
     msSaveOrOpenBlob?: (blob: Blob, defaultName?: string) => boolean;
