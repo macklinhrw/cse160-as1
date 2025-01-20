@@ -1,5 +1,5 @@
 import { initShaders } from "./lib/cuon-utils";
-import { Color, DrawableShapes } from "./types";
+import { Color, DrawableShapes, SaveType, Shape } from "./types";
 import { Point } from "./point";
 import { Triangle } from "./triangle";
 import { Circle } from "./circle";
@@ -40,7 +40,7 @@ let g_selectedCircleSegments = 8;
 // var g_points: Coordinate[] = []; // The array for the position of a mouse press
 // var g_colors: Color[] = []; // The array to store the color of a point
 // var g_sizes: number[] = []; // The array to store the color of a point
-var g_shapesList: (Point | Triangle | Circle)[] = [];
+var g_shapesList: Shape[] = [];
 
 function setupWebGL() {
   // Retrieve <canvas> element
@@ -152,6 +152,21 @@ function addActionsForHtmlUI() {
   // buttonSelectCircle.onclick = () => {
   //   g_selectedShape = "circle";
   // };
+
+  // Save/Load Events
+  let buttonSave = document.getElementById("b_save") as HTMLButtonElement;
+  buttonSave.onclick = () => {
+    save();
+  };
+
+  let buttonLoad = document.getElementById("i_load") as HTMLInputElement;
+  buttonLoad.onchange = () => {
+    let file = buttonLoad.files?.[0];
+    if (file) {
+      load(file);
+      buttonLoad.value = "";
+    }
+  };
 
   // Slider Events
   let sliderRed = document.getElementById("slider_red") as HTMLButtonElement;
@@ -289,6 +304,87 @@ function sendTextToHTML(text: string, htmlID: string) {
   }
 
   htmlEl.innerHTML = text;
+}
+
+function save() {
+  const data: SaveType = { shapesList: [...g_shapesList] };
+  const jsonData = JSON.stringify(data);
+  download(jsonData, "beautiful_painting.json", "application/json");
+}
+
+// Reference: https://stackoverflow.com/questions/5587973/javascript-upload-file
+async function load(file: File) {
+  // Clear shapes array
+  g_shapesList = [];
+
+  const contentsString = await file.text();
+  let loadedSave: SaveType;
+
+  try {
+    let contentsJson = JSON.parse(contentsString);
+    if (contentsJson) {
+      loadedSave = contentsJson as SaveType;
+    } else {
+      console.log("Something went wrong with loading the save file.");
+      return -1;
+    }
+  } catch (e) {
+    console.error("There was an error with loading the file.");
+    console.log(e);
+    return -1;
+  }
+
+  if (loadedSave!.shapesList && loadedSave!.shapesList.length) {
+    for (let s of loadedSave.shapesList) {
+      if (s.type === "circle") {
+        let shape = new Circle();
+        shape.position = s.position;
+        shape.segments = s.segments;
+        shape.size = s.size;
+        shape.color = s.color;
+        g_shapesList.push(shape);
+      } else if (s.type === "triangle") {
+        let shape = new Triangle();
+        shape.position = s.position;
+        shape.size = s.size;
+        shape.color = s.color;
+        g_shapesList.push(shape);
+      } else if (s.type === "point") {
+        let shape = new Point();
+        shape.position = s.position;
+        shape.size = s.size;
+        shape.color = s.color;
+        g_shapesList.push(shape);
+      }
+    }
+    renderAllShapes();
+  } else {
+    console.log("Something went wrong with loading the save file.");
+    return -1;
+  }
+}
+
+// Reference: https://stackoverflow.com/questions/13405129/create-and-save-a-file-with-javascript
+// Note: Function type definitions generated with AI
+// Function to download data to a file
+function download(data: BlobPart, filename: string, type: string): void {
+  var file = new Blob([data], { type: type });
+  if (window.navigator.msSaveOrOpenBlob)
+    // IE10+
+    window.navigator.msSaveOrOpenBlob(file, filename);
+  else {
+    // Others
+    var a = document.createElement("a"),
+      url = URL.createObjectURL(file);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 0);
+  }
 }
 
 main();
