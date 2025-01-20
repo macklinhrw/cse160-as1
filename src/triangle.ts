@@ -26,14 +26,14 @@ export class Triangle {
     gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
 
     // Draw
-    const d = size / 200;
+    const d = size / 80;
     const triangleVertices = new Float32Array([
+      xy[0] - d / 4,
+      xy[1] - d / 8,
+      xy[0] + d / 4,
+      xy[1] - d / 8,
       xy[0],
-      xy[1],
-      xy[0] + d,
-      xy[1],
-      xy[0],
-      xy[1] + d,
+      xy[1] + d / 3,
     ]);
     drawTriangle(triangleVertices);
   }
